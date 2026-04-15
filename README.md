@@ -6,10 +6,10 @@
 # Broxy (blooket but proxy)
 
 </div>
-broxy is a fan-made game site built in the style of blooket. it's basically blooket but hollowed out and turned into a game site. we also have a massive library of free browser games that you can play without signup, powered by LuminSDK.
+broxy is a fan-made game site built in the style of blooket. it's basically blooket but hollowed out and turned into a game site. we also have a massive library of free browser games that you can play without signup, powered by TGLSC's game CDN library.
 
 ## features
-**huge game library** — over 1,000 browser games using LuminSDK (https://luminsdk.com)
+**huge game library** — over 1,000 browser games using TGLSC's game CDN library. (https://github.com/endlessguyin/TGLSC-CDN)
 
 **blooket-inspired design** — inspired by blooket's UI design
 
