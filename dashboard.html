@@ -43,31 +43,7 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
 #topbar > * { pointer-events: all; }
 
 /* Search bar (matches Broxy's _searchBar_3l2cj_41 style) */
-#game-search-bar {
-  height: 55px;
-  flex: 1;
-  margin: 0 10px;
-  background-color: #fff;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  padding: 0 15px 6px;
-  box-shadow: inset 0 -6px rgba(0,0,0,.2), 0 0 4px rgba(0,0,0,.15);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 400px;
-}
-#game-search-bar i { font-size: 20px; color: #0bc2cf; width: 26px; text-align: center; }
-#game-search-input {
-  height: 30px;
-  flex: 1;
-  font-size: 18px;
-  color: #3a3a3a;
-  font-family: Nunito, sans-serif;
-  border: none;
-  outline: none;
-  background: transparent;
-}
+
 
 /* Profile chip */
 #profile-chip {
@@ -169,6 +145,15 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
   box-shadow: inset 0 -3px rgba(0,0,0,.2) !important;
 }
 
+
+
+
+
+
+
+
+
+/* Game grid */
 #game-search-bar {
   height: 55px;
   flex: 1;
@@ -194,19 +179,120 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
   outline: none;
   background: transparent;
 }
-
-
-
-
-/* Broxy overrides for Lumin */
-#games input[type="text"],
-#games input[type="search"],
-#games input:not([type="hidden"]),
-#games textarea,
-#games [class*="search" i],
-#games [id*="search" i],
-#games form {
-  display: none !important;
+#games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 265px);
+  gap: 20px;
+  max-width: 90%;
+  margin: 0 5%;
+}
+.game-card {
+  width: 265px;
+  background: #fff;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: inset 0 -7px rgba(0,0,0,.2), 0 0 4px rgba(0,0,0,.15);
+  cursor: pointer;
+  transition: transform .15s;
+}
+.game-card:hover { transform: translateY(-3px); }
+.game-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: #333;
+}
+.game-card-title {
+  font-family: Nunito, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #3a3a3a;
+  padding: 8px 10px 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-card-cat {
+  font-family: Nunito, sans-serif;
+  font-size: 13px;
+  color: #888;
+  padding: 0 10px 10px;
+}
+/* Pagination */
+#games-pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 25px 5%;
+  flex-wrap: wrap;
+}
+#games-pagination button {
+  font-family: "Titan One", sans-serif;
+  font-size: 16px;
+  background: #fff;
+  color: #9a49aa;
+  border: 2px solid #9a49aa;
+  border-radius: 5px;
+  padding: 6px 14px;
+  cursor: pointer;
+  box-shadow: inset 0 -3px rgba(0,0,0,.15);
+  transition: .15s;
+}
+#games-pagination button:hover {
+  background: #9a49aa;
+  color: #fff;
+}
+#games-pagination button.active {
+  background: #9a49aa;
+  color: #fff;
+  border-color: #6b1f85;
+}
+/* Game modal */
+#game-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+#game-modal.open { display: flex; }
+#game-modal-inner {
+  background: #fff;
+  border-radius: 10px;
+  width: 90vw;
+  height: 90vh;
+  max-width: 1100px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  display: flex;
+  flex-direction: column;
+}
+#game-modal-header {
+  background: #9a49aa;
+  color: #fff;
+  font-family: "Titan One", sans-serif;
+  font-size: 22px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: inset 0 -5px rgba(0,0,0,.2);
+}
+#game-modal-close {
+  cursor: pointer;
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-family: "Titan One", sans-serif;
+}
+#game-modal-frame {
+  flex: 1;
+  border: none;
+  width: 100%;
 }
 
 </style>
@@ -272,75 +358,24 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
 <!-- MAIN CONTENT -->
 <div id="content-area">
   <div id="page-title">Games</div>
-  <div id="games"></div>
+  <div id="games-grid"></div>
+  <div id="games-pagination"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
-<script>
-  function applyBroxyStyles() {
-    var games = document.getElementById('games');
-    if (!games) return;
+<!-- Game modal -->
+<div id="game-modal">
+  <div id="game-modal-inner">
+    <div id="game-modal-header">
+      <span id="game-modal-title">Game</span>
+      <button id="game-modal-close" onclick="closeGame()">✕</button>
+    </div>
+    <iframe id="game-modal-frame" allowfullscreen></iframe>
+  </div>
+</div>
+<div style="display:none"
+</div>
 
-    // Hide all inputs and search elements inside #games
-    games.querySelectorAll('input, textarea, form').forEach(function(el) {
-      el.style.setProperty('display', 'none', 'important');
-    });
-    games.querySelectorAll('[class*="search" i], [id*="search" i]').forEach(function(el) {
-      el.style.setProperty('display', 'none', 'important');
-    });
 
-    // Style pagination buttons with Titan One
-    games.querySelectorAll('a, button, span').forEach(function(el) {
-      var cls = (el.className || '').toLowerCase();
-      var id = (el.id || '').toLowerCase();
-      if (cls.includes('page') || cls.includes('paginat') || cls.includes('prev') || cls.includes('next')) {
-        el.style.setProperty('font-family', '"Titan One", sans-serif', 'important');
-        el.style.setProperty('background-color', '#fff', 'important');
-        el.style.setProperty('color', '#9a49aa', 'important');
-        el.style.setProperty('border', '2px solid #9a49aa', 'important');
-        el.style.setProperty('border-radius', '5px', 'important');
-        el.style.setProperty('padding', '6px 14px', 'important');
-        el.style.setProperty('margin', '2px', 'important');
-        el.style.setProperty('box-shadow', 'inset 0 -3px rgba(0,0,0,.15)', 'important');
-        el.style.setProperty('cursor', 'pointer', 'important');
-        el.style.setProperty('text-decoration', 'none', 'important');
-        if (cls.includes('active') || el.getAttribute('aria-current') === 'page') {
-          el.style.setProperty('background-color', '#9a49aa', 'important');
-          el.style.setProperty('color', '#fff', 'important');
-        }
-      }
-    });
-  }
-
-  function tryInit() {
-    if (typeof Lumin !== 'undefined') {
-      Lumin.init({ container: '#games', theme: 'light' });
-
-      // Watch for DOM changes and keep applying styles
-      var observer = new MutationObserver(function() {
-        applyBroxyStyles();
-      });
-      observer.observe(document.getElementById('games'), { childList: true, subtree: true });
-
-      // Also wire topbar search to Lumin's internal input
-      var topSearch = document.getElementById('game-search-input');
-      if (topSearch) {
-        topSearch.addEventListener('input', function() {
-          var lumInput = document.querySelector('#games input');
-          if (lumInput) {
-            var nativeInputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-            nativeInputSetter.call(lumInput, this.value);
-            lumInput.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-          if (typeof Lumin.search === 'function') Lumin.search(this.value);
-        });
-      }
-    } else {
-      setTimeout(tryInit, 100);
-    }
-  }
-  document.addEventListener('DOMContentLoaded', tryInit);
-</script>
 
 
 <script>
@@ -362,5 +397,81 @@ document.addEventListener('click', function(e) {
   window.location.href = 'https://www.google.com';
 }
 </script>
+
+<script>
+var allGames = [];
+var filteredGames = [];
+var currentPage = 1;
+var perPage = 24;
+
+fetch('https://glseries.net/api/cdn')
+  .then(function(r){ return r.json(); })
+  .then(function(json){
+    allGames = json.data || [];
+    filteredGames = allGames;
+    renderPage(1);
+  })
+  .catch(function(e){ console.error('Failed to load games', e); });
+
+document.getElementById('game-search-input').addEventListener('input', function(){
+  var q = this.value.toLowerCase();
+  filteredGames = allGames.filter(function(g){
+    return g.title.toLowerCase().includes(q) || (g.category||'').toLowerCase().includes(q);
+  });
+  renderPage(1);
+});
+
+function renderPage(page) {
+  currentPage = page;
+  var start = (page - 1) * perPage;
+  var pageGames = filteredGames.slice(start, start + perPage);
+  var grid = document.getElementById('games-grid');
+  grid.innerHTML = '';
+  pageGames.forEach(function(g){
+    var card = document.createElement('div');
+    card.className = 'game-card';
+    card.innerHTML = '<img src="' + g.thumbnail + '" alt="' + g.title + '" loading="lazy">' +
+      '<div class="game-card-title">' + g.title + '</div>' +
+      '<div class="game-card-cat">' + (g.category || '') + '</div>';
+    card.addEventListener('click', function(){ openGame(g); });
+    grid.appendChild(card);
+  });
+  renderPagination();
+  document.getElementById('content-area').scrollTop = 0;
+}
+
+function renderPagination() {
+  var total = Math.ceil(filteredGames.length / perPage);
+  var pg = document.getElementById('games-pagination');
+  pg.innerHTML = '';
+  if (total <= 1) return;
+
+  function btn(label, page, active) {
+    var b = document.createElement('button');
+    b.textContent = label;
+    if (active) b.classList.add('active');
+    b.addEventListener('click', function(){ renderPage(page); });
+    pg.appendChild(b);
+  }
+
+  if (currentPage > 1) btn('Prev', currentPage - 1, false);
+  var start = Math.max(1, currentPage - 2);
+  var end = Math.min(total, currentPage + 2);
+  for (var i = start; i <= end; i++) btn(i, i, i === currentPage);
+  if (currentPage < total) btn('Next', currentPage + 1, false);
+}
+
+function openGame(g) {
+  document.getElementById('game-modal-title').textContent = g.title;
+  document.getElementById('game-modal-frame').src = g.embed_url;
+  document.getElementById('game-modal').classList.add('open');
+}
+
+function closeGame() {
+  document.getElementById('game-modal').classList.remove('open');
+  document.getElementById('game-modal-frame').src = '';
+}
+</script>
+
 </body>
 </html>
