@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="favicon.svg" width="230" height="230">
+  <img src="favicon-tilted.svg" width="230" height="230">
 </p>
 <div align="center">
 
