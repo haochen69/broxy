@@ -263,7 +263,7 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
 <!-- MAIN CONTENT -->
 <div id="content-area">
   <div id="page-title">Games</div>
-  <div id="games"></div>
+  <div id="games-grid"></div>
 </div>
 
 <!-- Game modal -->
@@ -303,23 +303,52 @@ document.addEventListener('click', function(e) {
 </script>
 
 
-
-
-<script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
 <script>
-  function tryInit() {
-    if (typeof Lumin !== 'undefined') {
-      Lumin.init({
-        container: '#games',
-        theme: 'light',
-        search: false,
-        pagination: false
-      });
-    } else {
-      setTimeout(tryInit, 100);
-    }
-  }
-  document.addEventListener('DOMContentLoaded', tryInit);
+var allGames = [];
+var filteredGames = [];
+
+fetch('https://glseries.net/api/cdn')
+  .then(function(r){ return r.json(); })
+  .then(function(json){
+    allGames = json.data || [];
+    filteredGames = allGames;
+    renderGames();
+  })
+  .catch(function(e){ console.error('Failed to load games', e); });
+
+document.getElementById('game-search-input').addEventListener('input', function(){
+  var q = this.value.toLowerCase();
+  filteredGames = allGames.filter(function(g){
+    return g.title.toLowerCase().includes(q) || (g.category||'').toLowerCase().includes(q);
+  });
+  renderGames();
+});
+
+function renderGames() {
+  var grid = document.getElementById('games-grid');
+  grid.innerHTML = '';
+  filteredGames.forEach(function(g){
+    var card = document.createElement('div');
+    card.className = 'game-card';
+    card.innerHTML = '<img src="' + g.thumbnail + '" alt="' + g.title + '" loading="lazy">' +
+      '<div class="game-card-title">' + g.title + '</div>' +
+      '<div class="game-card-cat">' + (g.category || '') + '</div>';
+    card.addEventListener('click', function(){ openGame(g); });
+    grid.appendChild(card);
+  });
+}
+
+function openGame(g) {
+  document.getElementById('game-modal-title').textContent = g.title;
+  document.getElementById('game-modal-frame').src = g.embed_url;
+  document.getElementById('game-modal').classList.add('open');
+}
+
+function closeGame() {
+  document.getElementById('game-modal').classList.remove('open');
+  document.getElementById('game-modal-frame').src = '';
+}
 </script>
+
 </body>
 </html>
