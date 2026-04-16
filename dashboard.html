@@ -200,6 +200,37 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
   width: 100%;
 }
 
+#game-search-bar {
+  height: 55px;
+  flex: 1;
+  max-width: 400px;
+  margin: 0 10px;
+  background-color: #fff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  padding: 0 15px 6px;
+  box-shadow: inset 0 -6px rgba(0,0,0,.2), 0 0 4px rgba(0,0,0,.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#game-search-bar i {
+  font-size: 20px;
+  color: #0bc2cf;
+  width: 26px;
+  text-align: center;
+}
+#game-search-input {
+  height: 30px;
+  flex: 1;
+  font-size: 18px;
+  color: #3a3a3a;
+  font-family: Nunito, sans-serif;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+
 </style>
 </head>
 <body>
@@ -263,7 +294,7 @@ body { margin:0; padding:0; background-color:#f7f7f7; font-family:Nunito,sans-se
 <!-- MAIN CONTENT -->
 <div id="content-area">
   <div id="page-title">Games</div>
-  <div id="games"></div>
+  <div id="games-grid"></div>
 </div>
 
 <!-- Game modal -->
@@ -307,30 +338,66 @@ document.addEventListener('click', function(e) {
 
 
 <script src="https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js"></script>
-<script>
-  function tryInit() {
-    if (typeof Lumin !== 'undefined') {
-      Lumin.init({
-        container: '#games',
-        theme: 'light',
-        showSearch: false,
-        showCategories: false,
-        showRandom: false
-      });
 
-      var input = document.getElementById('game-search-input');
-      if (input) {
-        input.addEventListener('input', function() {
-          if (typeof Lumin.search === 'function') {
-            Lumin.search(this.value);
-          }
-        });
-      }
+
+<script>
+async function initGames() {
+  await Lumin.init({ headless: true });
+
+  var allGames = [];
+  var allImages = {};
+
+  async function loadGames(query) {
+    var grid = document.getElementById('games-grid');
+    grid.innerHTML = '<p style="font-family:Nunito,sans-serif;color:#888;padding:20px 0">Loading games...</p>';
+
+    if (query) {
+      allGames = await Lumin.search(query);
     } else {
-      setTimeout(tryInit, 100);
+      var result = await Lumin.getGames({ page: 1, limit: 500 });
+      allGames = result.games;
     }
+
+    var urls = await Promise.all(
+      allGames.map(function(g){ return Lumin.getImageUrl(g.image_token); })
+    );
+    allGames.forEach(function(g, i){ allImages[g.id] = urls[i]; });
+
+    renderGrid();
   }
-  document.addEventListener('DOMContentLoaded', tryInit);
+
+  function renderGrid() {
+    var grid = document.getElementById('games-grid');
+    grid.innerHTML = '';
+    allGames.forEach(function(g) {
+      var card = document.createElement('div');
+      card.className = 'game-card';
+      card.innerHTML =
+        '<img src="' + (allImages[g.id] || '') + '" alt="' + g.name + '" loading="lazy">' +
+        '<div class="game-card-title">' + g.name + '</div>' +
+        '<div class="game-card-cat">' + (g.category || '') + '</div>';
+      card.addEventListener('click', function() {
+        Lumin.loadGame(g.id);
+      });
+      grid.appendChild(card);
+    });
+  }
+
+  var input = document.getElementById('game-search-input');
+  var searchTimer;
+  if (input) {
+    input.addEventListener('input', function() {
+      clearTimeout(searchTimer);
+      var q = this.value;
+      searchTimer = setTimeout(function(){ loadGames(q || null); }, 300);
+    });
+  }
+
+  loadGames();
+}
+
+document.addEventListener('DOMContentLoaded', initGames);
 </script>
+
 </body>
 </html>
